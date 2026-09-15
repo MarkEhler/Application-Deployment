@@ -6,7 +6,7 @@ This repository contains the following:
 - automation which performs these deployments
 
 ## Automation
-This repo is updated by the Application component repos (front end, back end, etc.) upon merge's into their own develop branches.
+This repo is updated by the Application component repos (front end, back end, etc.) upon merges into their own develop branches.
 ## Legend
 ```mermaid
 flowchart TD
