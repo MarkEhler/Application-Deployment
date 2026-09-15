@@ -1,7 +1,7 @@
 # Application Deployment
 ## Summary
 This repository contains the following: 
-- manifests that are used to deploy the Application components to our kubernetes clusters
+- manifests that are used to deploy the Application components to a kubernetes clusters
 - manifests that are used to deploy the tools which support Application
 - automation which performs these deployments
 
