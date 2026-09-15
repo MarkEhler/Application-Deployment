@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: Application-cert-ingress
+  namespace: Application
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    cert-manager.io/acme-challenge-type: http01
+    nginx.org/client-max-body-size: "100m"
+    nginx.org/proxy-read-timeout: "600"
+    nginx.org/proxy-send-timeout: "600"
+    nginx.org/proxy-body-size: "100m"
+    nginx.org/rewrite-target: /$1
+    nginx.org/use-regex: "true"
+    nginx.org/websocket-services: Backend
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app-dev.disastertech.co
+        - Backend-dev.disastertech.co
+      secretName: tls-cert
+  rules:
+    - host: app-dev.disastertech.co
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: Frontend
+                port:
+                  number: 80
+    - host: Backend-dev.disastertech.co
+      http:
+       paths:
+         - path: /websocket
+           pathType: ImplementationSpecific
+           backend:
+             service:
+               name: Backend
+               port:
+                 number: 8080
+         - path: /
+           pathType: ImplementationSpecific
+           backend:
+             service:
+               name: Backend
+               port:
+                 number: 80

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-tester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-tester
+  template:
+    metadata:
+      labels:
+        app: traffic-tester
+    spec:
+      containers:
+      - name: listener
+        image: python:3.10-slim
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            cat << 'EOF' > /listener.py
+            from flask import Flask, request
+            app = Flask(__name__)
+            @app.route("/recv", methods=["POST"])
+            def recv():
+                print("Received POST from:", request.remote_addr)
+                return "OK\n"
+            app.run(host="0.0.0.0", port=8080)
+            EOF
+            pip install flask >/dev/null 2>&1
+            python /listener.py
+        ports:
+        - containerPort: 8080
+
+      - name: sender
+        image: curlimages/curl
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            while true; do
+              echo "Sending POST..."
+              curl -s -X POST http://localhost:8080/recv >/dev/null
+              sleep 5
+            done
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traffic-listener
+spec:
+  selector:
+    app: traffic-tester
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer

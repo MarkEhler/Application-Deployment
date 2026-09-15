@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Backend
+  annotations:
+    admission.datadoghq.com/enabled: 'true'
+    admission.datadoghq.com/js-lib.version: 'latest'
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  selector:
+    matchLabels:
+      app: Backend
+  template:
+    metadata:
+      labels:
+        app: Backend
+    spec:
+      imagePullSecrets:
+        - name: Backend-secrets
+        - name: acrsecret
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - name: Backend
+          image: dtiacr.azurecr.io/Backend
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              name: http
+            - containerPort: 8080
+              name: websocket
+          envFrom:
+            - configMapRef:
+                name: Backend-configmap
+            - secretRef:
+                name: Backend-secrets
+              

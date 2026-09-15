@@ -1,0 +1,43 @@
+name: ArgoCD PR Deploy Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  argocd-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Argo CD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin
+
+      - name: Set PR App Name
+        id: vars
+        run: |
+          echo "APP_NAME=Frontend-pr-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+      - name: Wait for Argo CD App to Be Healthy
+        run: |
+          # Wait until the app becomes Healthy and Synced
+          for i in {1..30}; do
+            STATUS=$(argocd app get $APP_NAME --insecure --auth-token $ARGOCD_AUTH_TOKEN -o json | jq -r '.status.health.status')
+            SYNC=$(argocd app get $APP_NAME --insecure --auth-token $ARGOCD_AUTH_TOKEN -o json | jq -r '.status.sync.status')
+
+            echo "Health: $STATUS, Sync: $SYNC"
+
+            if [[ "$STATUS" == "Healthy" && "$SYNC" == "Synced" ]]; then
+              echo "Application is ready"
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo "Application failed to become Healthy and Synced"
+          exit 1
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}

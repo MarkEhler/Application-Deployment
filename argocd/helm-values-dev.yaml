@@ -1,0 +1,33 @@
+server:
+  insecure: true
+  extraArgs: ["--insecure"]
+  podLabels:
+    azure.workload.identity/use: "true"
+  serviceAccount:
+    annotations:
+      azure.workload.identity/client-id: "3ab6e8ca-cdb8-4736-8f08-0011b6b2276b"
+  config:
+    url: https://argocd-dev.disastertech.co
+
+configs:
+  cm:
+    url: https://argocd-dev.disastertech.co
+    oidc.config: |
+      name: Azure
+      issuer: https://login.microsoftonline.com/eb7d6aa9-9d91-4abb-a4bb-b23088fe6071/v2.0
+      clientID: 3ab6e8ca-cdb8-4736-8f08-0011b6b2276b
+      azure:
+        useWorkloadIdentity: true
+      requestedIDTokenClaims:
+        groups:
+          essential: true
+          value: "SecurityGroup"
+      requestedScopes:
+        - openid
+        - profile
+        - email
+  rbac:
+    policy.csv: |
+      g, 811c1fea-649f-4e2b-8c8f-740fb523ca21, role:readonly
+      g, 857c14c7-aaeb-40da-ba6e-c7bdfcbd5977, role:admin
+    policy.default: role:readonly

@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../../Application/bases
+configMapGenerator:
+- behavior: replace
+  envs:
+  - Backend-configmap.env
+  name: Backend-configmap
+  options:
+    disableNameSuffixHash: true
+- behavior: create
+  envs:
+  - Frontend-configmap.env
+  name: Frontend-configmap
+  options:
+    disableNameSuffixHash: true
+images:
+- name: dtiacr.azurecr.io/Backend
+  newName: dtiacr.azurecr.io/Backend
+  newTag: cd2c7222b67b7d0cfc4a2ae9cb3d5e643fc5e32c
+- name: dtiacr.azurecr.io/Frontend
+  newName: dtiacr.azurecr.io/Frontend
+  newTag: 417275aecfed339cead2465dd591629a80d4c214
+
+patches:
+- patch: |-
+    [
+      {
+        "op": "replace",
+        "path": "/spec/rules/0/host",
+        "value": "app-dev.disastertech.co"
+      },
+      {
+        "op": "replace",
+        "path": "/spec/rules/1/host",
+        "value": "Backend-dev.disastertech.co"
+      },
+      {
+        "op": "replace",
+        "path": "/spec/tls/0/hosts/0",
+        "value": "app-dev.disastertech.co"
+      },
+      {
+        "op": "replace",
+        "path": "/spec/tls/0/hosts/1",
+        "value": "Backend-dev.disastertech.co"
+      }
+    ]
+  target:
+    group: networking.k8s.io
+    kind: Ingress
+    name: Application-cert-ingress
+    version: v1

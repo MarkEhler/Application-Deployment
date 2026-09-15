@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress
+  namespace: Application
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: Application-dev
+    service.beta.kubernetes.io/azure-load-balancer-ipv4: "20.168.211.165"

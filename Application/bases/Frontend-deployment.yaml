@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Frontend
+  template:
+    metadata:
+      labels:
+        app: Frontend
+    spec:
+      imagePullSecrets:
+        - name: acrsecret
+      containers:
+        - name: Frontend
+          image: dtiacr.azurecr.io/Frontend
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: Frontend-configmap

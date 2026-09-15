@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - k8s.nginx.org_globalconfigurations.yaml
+  - k8s.nginx.org_policies.yaml
+  - k8s.nginx.org_transportservers.yaml
+  - k8s.nginx.org_virtualserverroutes.yaml
+  - k8s.nginx.org_virtualservers.yaml

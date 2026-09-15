@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tileserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tileserver
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: tileserver
+      annotations:
+        kubectl.kubernetes.io/restartedAt: '2025-03-04T16:08:11Z'
+    spec:
+      containers:
+        - name: tileserver
+          image: >-
+            dtiacr.azurecr.io/tileserver
+          ports:
+            - name: http
+              containerPort: 7800
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: tileserver-secrets
+                  key: DATABASE_URL
+            - name: .dockerconfigjson
+              valueFrom:
+                secretKeyRef:
+                  name: acrsecret
+                  key: .dockerconfigjson
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: acrsecret
+        - name: tileserver-secrets
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

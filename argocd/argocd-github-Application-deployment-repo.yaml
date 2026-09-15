@@ -1,0 +1,27 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: argocd-github-app-secret
+  namespace: argocd
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: disastertech-cluster-store
+  target:
+    name: argocd-github-app-secret
+    creationPolicy: Owner
+    template:
+      metadata:
+        labels:
+          argocd.argoproj.io/secret-type: repository
+      data:
+        type: git
+        url: https://github.com/DisasterTechInc/platform-infrastructure
+        githubAppID: "1242160"
+        githubAppInstallationID: "65904881"
+        githubAppPrivateKey: "{{ .githubAppPrivateKey }}"
+  data:
+    - secretKey: githubAppPrivateKey
+      remoteRef:
+        key: github-app-platform-infrastructure-deployer-key
